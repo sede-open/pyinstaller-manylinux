@@ -44,8 +44,13 @@ source ${HOME}/.bashrc
 
 # Install requirements
 if [ -f requirements.txt ]; then
-    pyenv exec pip install -r requirements.txt
-fi # [ -f requirements.txt ]
+    $PYTHON_EXE pip install -r requirements.txt
+fi
+
+if [ -f poetry.lock ]; then
+    poetry env use ${PYTHON_VERSION}
+    poetry install
+fi
 
 echo "PyInstaller parameters: $@"
 

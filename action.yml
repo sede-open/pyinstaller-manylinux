@@ -1,5 +1,5 @@
-name: "PyInstaller ManyLinux 2.28 Docker Action"
-description: "Run Pyinstaller on ManyLinux 2.28 (x86_64) AlmaLinux 8.7 based using Pyenv"
+name: "PyInstaller ManyLinux Docker Action"
+description: "Run Pyinstaller on ManyLinux (x86_64)"
 branding:
   icon: "box"
   color: "green"
@@ -9,6 +9,6 @@ inputs:
     required: true
 runs:
   using: "docker"
-  image: "docker://ghcr.io/oleksis/pyinstaller-manylinux:latest"
+  image: "docker://ghcr.io/sede-open/pyinstaller-manylinux:latest"
   args:
     - ${{ fromJSON(inputs.pyinstaller-params) }}

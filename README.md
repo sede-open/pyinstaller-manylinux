@@ -62,7 +62,7 @@ Hello out there 👋
 
 ## How to use Github Container Registry
 [Github Packages](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-- [pyinstaller-manylinux](https://github.com/oleksis/pyinstaller-manylinux/pkgs/container/pyinstaller-manylinux)
+- [pyinstaller-manylinux](https://github.com/sede-open/pyinstaller-manylinux/pkgs/container/pyinstaller-manylinux)
 
 ## Notes
 
