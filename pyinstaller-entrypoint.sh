@@ -44,7 +44,7 @@ source ${HOME}/.bashrc
 
 # Install requirements
 if [ -f requirements.txt ]; then
-    $PYTHON_EXE pip install -r requirements.txt
+    python3 -m pip install -r requirements.txt
 fi
 
 if [ -f poetry.lock ]; then
@@ -54,5 +54,5 @@ fi
 
 echo "PyInstaller parameters: $@"
 
-pyenv exec pyinstaller --clean -y --dist ./dist "$@"
+pyinstaller --clean -y --dist ./dist "$@"
 chown -R --reference=. ./dist

@@ -13,7 +13,7 @@ This action run [PyInstaller](https://www.pyinstaller.org/) using docker image f
 
 ## Example usage
 ```yaml
-uses: oleksis/pyinstaller-manylinux@v2.3.0
+uses: sede-open/pyinstaller-manylinux@v1.0.0
 with:
   pyinstaller-params: "['-c', '-F', '--icon=assets/image.ico', '--exclude-module=test', '--name=app-binary', 'app_module/__main__.py']"
 ```
@@ -23,36 +23,16 @@ See more in [test.yml](.github/workflows/test.yml)
 ## How to use the Dockerfile
 - Build the image *pyinstaller-manylinux-2.28*
 ```bash
-docker build -t pyinstaller-manylinux-2.28 -f ./Dockerfile .
+docker build -f Dockerfile . -t ghcr.io/sede-open/pyinstaller-manylinux:latest
 ```
 - Create bundle app using pyinstaller in the docker image
 ```bash
-docker run --name pyinstaller-manylinux-2.28 \
-            -it -d \
-            --workdir /src \
-            -v $(pwd):/src \
-            pyinstaller-manylinux-2.28 \
-            -c -F --name=app tests/app.py
-```
-- View the logs in the docker container
-```bash   
-docker logs --tail 1000 -f pyinstaller-manylinux-2.28
-```
-- New container with **interactive terminal typing** using bash
-```bash
-docker run --name pyinstaller-pyenv \
+docker run --rm \
             -it \
-            --entrypoint bash \
             --workdir /src \
             -v $(pwd):/src \
-            pyinstaller-manylinux-2.28
-```
-- Start the new container using interactive bash
-```bash
-docker start -i pyinstaller-pyenv
-
-[root@882bd364e3fe src]# pyenv versions
-* 3.10.10 (set by /root/.pyenv/version)
+            ghcr.io/sede-open/pyinstaller-manylinux:latest \
+            -c -F --name=app tests/app.p
 ```
 - Run the app in the local machine
 ```bash
@@ -74,18 +54,6 @@ cp /usr/local/lib/libcrypt.so.2 .
 ```
 
 ## Releases
-PyInstaller ManyLinux 2.28 Docker Action [v2.3.0](https://github.com/oleksis/pyinstaller-manylinux/releases/tag/v2.3.0)
+PyInstaller ManyLinux 2.28 Docker Action [v1.0.0](https://github.com/sede-open/pyinstaller-manylinux/releases/tag/v1.0.0)
 - This action run PyInstaller using docker image (AlmaLinux 8.7 based) from [pypa/manylinux repository](https://quay.io/repository/pypa/manylinux_2_28_x86_64)
 - Python 3.10
-
-PyInstaller ManyLinux 2.28 Docker Action [v2.2.1](https://github.com/oleksis/pyinstaller-manylinux/releases/tag/v2.2.1)
-- This action run PyInstaller using docker image (AlmaLinux 8.7 based) from [pypa/manylinux repository](https://quay.io/repository/pypa/manylinux_2_28_x86_64)
-- Python 3.8
-
-PyInstaller ManyLinux 2.24 Docker Action [v2.1.2](https://github.com/oleksis/pyinstaller-manylinux/releases/tag/v2.1.2)
-- This action run PyInstaller using docker image (Debian 9 based) from [pypa/manylinux repository](https://quay.io/repository/pypa/manylinux_2_24_x86_64)
-- Python 3.6
-
-PyInstaller ManyLinux 2014 Docker Action [v1.0.0](https://github.com/oleksis/pyinstaller-manylinux/releases/tag/v1)
-- This action run PyInstaller using docker image (Centos 7 based) from [pypa/manylinux repository](https://quay.io/repository/pypa/manylinux2014_x86_64)
-- Python 3.6
