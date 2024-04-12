@@ -5,11 +5,13 @@ LABEL org.opencontainers.image.source=https://github.com/sede-open/pyinstaller-m
 LABEL org.opencontainers.image.description="Run PyInstaller on PyPa ManyLinux glibc 2.28"
 LABEL org.opencontainers.image.licenses=MIT
 
+# OPENSSL is required for python build with pyenv
+
 SHELL ["/bin/bash", "-c"]
 
 ARG HOME=/root
 ARG PYTHON_VERSION=3.10
-ARG PYTHON_LAST=3.10.12
+ARG PYTHON_LAST=3.10.14
 ARG POETRY_VERSION=1.6.1
 ARG PYINSTALLER_VERSION=6.5.0
 
@@ -22,22 +24,14 @@ ENV PYPI_URL=https://pypi.python.org/
 ENV PYPI_INDEX_URL=https://pypi.python.org/simple
 ENV HOME=${HOME}
 ENV PYTHON_VERSION=${PYTHON_VERSION}
-ENV PYTHON_EXE="python${PYTHON_VERSION}"
-ENV POETRY_VERSION=${POETRY_VERSION}
-ENV PYINSTALLER_VERSION=${PYINSTALLER_VERSION}
-ENV POETRY_HOME="${HOME}/.poetry"
-ENV PATH="${POETRY_HOME}/bin:${HOME}/.venv/bin:${PATH}"
-
 ENV PYTHON_LAST=${PYTHON_LAST}
 ENV PYTHON_EXE="python${PYTHON_VERSION}"
 ENV POETRY_VERSION=${POETRY_VERSION}
-ENV PYINSTALLER_VERSION=${PYINSTALLER_VERSION}
-ENV PYINSTALLER_VERSION=${PYINSTALLER_VERSION}
-# ENV PY310_BIN=/opt/_internal/cpython-3.10.12/bin
 ENV POETRY_HOME="${HOME}/.poetry"
-# Ensure we use PY310 in the PATH
-ENV PATH="${POETRY_HOME}/bin:${PATH}"
-# ENV PATH="${PY310_BIN}:$PATH"
+ENV PATH="${POETRY_HOME}/bin:${HOME}/.venv/bin:${PATH}"
+
+ENV PYINSTALLER_VERSION=${PYINSTALLER_VERSION}
+
 ENV OPENSSL_VERSION=${OPENSSL_VERSION}
 ENV OPENSSL_DIR=${OPENSSL_DIR}
 ENV PYENV_ROOT="${HOME}/.pyenv"
@@ -49,17 +43,18 @@ ENV UPX_FILE=${UPX_FILE}
 RUN \
     set -exuo pipefail \
     && dnf -y install --allowerasing make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel \
-#    openssl-devel \
     tk-devel libffi-devel xz-devel libuuid-devel gdbm-devel libnsl2-devel \
     && dnf clean all \
     && rm -rf /var/cache/yum
 
+# NOTE: UPX only works/is used on Windows
+# https://github.com/pyinstaller/pyinstaller/issues/5966
 # UPX
-RUN \
-    set -exuo pipefail \
-    && curl -s -L -o ${UPX_FILE}.tar.xz https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_FILE}.tar.xz \
-    && tar -xf ${UPX_FILE}.tar.xz -C /opt \
-    && rm -rf ${UPX_FILE}.tar.xz
+#RUN \
+#    set -exuo pipefail \
+#    && curl -s -L -o ${UPX_FILE}.tar.xz https://github.com/upx/upx/releases/download/v${UPX_VERSION}/${UPX_FILE}.tar.xz \
+#    && tar -xf ${UPX_FILE}.tar.xz -C /opt \
+#    && rm -rf ${UPX_FILE}.tar.xz
 
 # OpenSSL
 RUN \
@@ -79,12 +74,14 @@ RUN \
     && rm -rf ${OPENSSL_VERSION} ${OPENSSL_VERSION}.tar.gz \
     && ${OPENSSL_DIR}/bin/openssl version
 
-ENV PATH="${HOME}/.pyenv/bin:${OPENSSL_DIR}/bin:/opt/${UPX_FILE}:$PATH"
+ENV PATH="${HOME}/.pyenv/bin:${OPENSSL_DIR}/bin:/opt/:$PATH"
 
-# Pyenv
+# Pyenv (purge manylinux python version first to not confuse poetry)
 RUN \
     set -x \
     && touch ${HOME}/.bashrc \
+    && rm -rf /opt/_internal/cpython-${PYTHON_VERSION}*/ \
+    && rm -rf /opt/python/cp${PYTHON_VERSION} \
     && echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ${HOME}/.bashrc \
     && echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ${HOME}/.bashrc \
     && echo 'eval "$(pyenv init -)"' >> ${HOME}/.bashrc \
@@ -97,18 +94,16 @@ RUN \
        pyenv install ${PYTHON_LAST} \
     && pyenv global ${PYTHON_LAST} \
     && pyenv exec pip install --upgrade pip setuptools wheel \
-    && pyenv exec pip install --upgrade pyinstaller==$PYINSTALLER_VERSION
+    && pyenv exec pip install --upgrade pyinstaller==$PYINSTALLER_VERSION \
+    && curl -sSL https://install.python-poetry.org | ${PYTHON_EXE} - --version ${POETRY_VERSION} \
+    && poetry config virtualenvs.create false
 
 COPY pyinstaller-entrypoint.sh /usr/local/bin/pyinstaller-entrypoint.sh
 
 RUN \
     set -x \
     && mkdir -p /src/ \
-    && chmod +x /usr/local/bin/pyinstaller-entrypoint.sh \
-    && which python3 \
-    && python3 --version \
-    && curl -sSL https://install.python-poetry.org | ${PYTHON_EXE} - --version ${POETRY_VERSION} \
-    && poetry config virtualenvs.create false
+    && chmod +x /usr/local/bin/pyinstaller-entrypoint.sh
 
 VOLUME /src/
 #WORKDIR /src/
