@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.licenses=MIT
 
 SHELL ["/bin/bash", "-c"]
 
-ARG HOME=/root
+ARG _HOME=/root
 ARG PYTHON_VERSION=3.10
 ARG PYTHON_LAST=3.10.14
 ARG POETRY_VERSION=1.6.1
@@ -22,19 +22,19 @@ ARG UPX_FILE=upx-${UPX_VERSION}-amd64_linux
 
 ENV PYPI_URL=https://pypi.python.org/
 ENV PYPI_INDEX_URL=https://pypi.python.org/simple
-ENV HOME=${HOME}
+ENV _HOME=${_HOME}
 ENV PYTHON_VERSION=${PYTHON_VERSION}
 ENV PYTHON_LAST=${PYTHON_LAST}
 ENV PYTHON_EXE="python${PYTHON_VERSION}"
 ENV POETRY_VERSION=${POETRY_VERSION}
-ENV POETRY_HOME="${HOME}/.poetry"
-ENV PATH="${POETRY_HOME}/bin:${HOME}/.venv/bin:${PATH}"
+ENV POETRY_HOME="${_HOME}/.poetry"
+ENV PATH="${POETRY_HOME}/bin:${_HOME}/.venv/bin:${PATH}"
 
 ENV PYINSTALLER_VERSION=${PYINSTALLER_VERSION}
 
 ENV OPENSSL_VERSION=${OPENSSL_VERSION}
 ENV OPENSSL_DIR=${OPENSSL_DIR}
-ENV PYENV_ROOT="${HOME}/.pyenv"
+ENV PYENV_ROOT="${_HOME}/.pyenv"
 ENV UPX_VERSION=${UPX_VERSION}
 ENV UPX_FILE=${UPX_FILE}
 
@@ -74,20 +74,20 @@ RUN \
     && rm -rf ${OPENSSL_VERSION} ${OPENSSL_VERSION}.tar.gz \
     && ${OPENSSL_DIR}/bin/openssl version
 
-ENV PATH="${HOME}/.pyenv/bin:${OPENSSL_DIR}/bin:/opt/:$PATH"
+ENV PATH="${_HOME}/.pyenv/bin:${OPENSSL_DIR}/bin:/opt/:$PATH"
 
 # Pyenv (purge manylinux python version first to not confuse poetry)
 RUN \
     set -x \
-    && touch ${HOME}/.bashrc \
+    && touch ${_HOME}/.bashrc \
     && rm -rf /opt/_internal/cpython-${PYTHON_VERSION}*/ \
     && rm -rf /opt/python/cp${PYTHON_VERSION} \
-    && echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ${HOME}/.bashrc \
-    && echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ${HOME}/.bashrc \
-    && echo 'eval "$(pyenv init -)"' >> ${HOME}/.bashrc \
-    && echo 'eval "$(pyenv virtualenv-init -)"' >> ${HOME}/.bashrc \
+    && echo 'export PYENV_ROOT="${_HOME}/.pyenv"' >> ${_HOME}/.bashrc \
+    && echo 'export PATH="${_HOME}/.pyenv/bin:$PATH"' >> ${_HOME}/.bashrc \
+    && echo 'eval "$(pyenv init -)"' >> ${_HOME}/.bashrc \
+    && echo 'eval "$(pyenv virtualenv-init -)"' >> ${_HOME}/.bashrc \
     && curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash \
-    && source ${HOME}/.bashrc \
+    && source ${_HOME}/.bashrc \
     && CPPFLAGS="-O2 -I${OPENSSL_DIR}/include" CFLAGS="-I${OPENSSL_DIR}/include" \
        LD_FLAGS="-L${OPENSSL_DIR}/lib -Wl,-rpath,${OPENSSL_DIR}/lib" LD_RUN_PATH="${OPENSSL_DIR}/lib" \
        CONFIGURE_OPTS="--with-openssl=${OPENSSL_DIR}" PYTHON_CONFIGURE_OPTS="--enable-shared" \
